@@ -19,6 +19,7 @@ install: install-scripts install-doc
 
 install-scripts:
 
+	install -vDm 755 android-input-utils/coordinates-orthonormal "$(BIN_DIR)/coordinates-orthonormal"
 	install -vDm 755 android-input-utils/key2keyevent "$(BIN_DIR)/key2keyevent"
 
 install-doc:

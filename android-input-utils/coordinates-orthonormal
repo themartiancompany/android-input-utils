@@ -1,0 +1,295 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+_share="${_bin}/../share"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+_root_requirements() {
+  _check_cmd \
+    "bc"
+  _check_cmd \
+    "display-resolution" \
+    "android-display-utils"
+}
+
+# shellcheck disable=SC2034
+_global_variables() {
+  get_date=""
+  get_mode=""
+  x_axis=""
+  y_axis=""
+  color=""
+  quiet=""
+}
+
+_range_check() {
+  local \
+    _width="${1}" \
+    _height="${2}" \
+    _x="${3}" \
+    _y="${4}"
+  if (( "$(echo "${_width} < ${_x}" | bc -l)" )) || \
+     (( "$(echo "${_height} < ${_y}" | bc -l)" )); then
+    _msg_error \
+      "coordinates '${_x}' '${_y}' out of range '${_width}' '${_height}'" \
+      1
+  fi
+}
+
+_root_encode() {
+  local \
+    _x="${1}" \
+    _y="${2}" \
+    _nx \
+    _ny \
+    _height \
+    _width \
+    _height_mid \
+    _width_mid
+  _height="$( \
+    display-resolution \
+      -H)"
+  _width="$( \
+    display-resolution \
+      -W)"
+  _range_check \
+    "${_width}" \
+    "${_height}" \
+    "${_x}" \
+    "${_y}"
+  _height_mid="$(( \
+    _height / 2 ))"
+  _width_mid="$(( \
+    _width / 2 ))"
+  _nx="$( \
+    echo \
+      "scale=10;(${_x} - ${_width_mid}) / ${_width_mid}" | \
+      bc)"
+  _ny="$( \
+    echo \
+      "scale=10;(${_y} - ${_height_mid}) / ${_height_mid}" | \
+      bc)"
+  echo \
+    "${_nx}" \
+    "${_ny}"
+}
+
+_root_decode() {
+  local \
+    _x="${1}" \
+    _y="${2}" \
+    _nx \
+    _ny \
+    _height \
+    _width \
+    _height_mid \
+    _width_mid
+  _range_check \
+    "1" \
+    "1" \
+    "${_x}" \
+    "${_y}"
+  _range_check \
+    "${_x}" \
+    "${_y}" \
+    "-1" \
+    "-1"
+  _height="$( \
+    display-resolution \
+      -H)"
+  _width="$( \
+    display-resolution \
+      -W)"
+  _height_mid="$(( \
+    _height / 2 ))"
+  _width_mid="$(( \
+    _width / 2 ))"
+  _nx="$( \
+    echo \
+      "scale=10;(${_x} + 1) * ${_width_mid}" | \
+      bc)"
+  _ny="$( \
+    echo \
+      "scale=10;(${_y} + 1) * ${_height_mid}" | \
+      bc)"
+  echo \
+    "${_nx}" \
+    "${_ny}"
+}
+
+_coordinates_orthonormal() {
+  local \
+    _command="${1}" \
+    _x="${2}" \
+    _y="${3}" \
+    _mode="${4}" \
+    _cmd=()
+  _resolution="$( \
+    display-resolution)"
+  "_${_mode}_${_command}" \
+    "${_x}" \
+    "${_y}"
+}
+
+_auto_detect_mode() {
+  local \
+    _os
+  _os="$( \
+    uname \
+      -o)"
+  if [[ "${_os}" == "Android" ]]; then
+    _root_requirements
+    echo \
+      "root"
+  elif [[ "${_os}" == "GNU/Linux" ]]; then
+    _msg_error \
+      "not implemented. something with xdotool needs to be written"
+  fi
+}
+
+_set_overrides() {
+  _set_override \
+    "get" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "get" \
+    "mode" \
+    "$(_auto_detect_mode)"
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "        Transform at date:   $(_get "get" "date")"
+  _msg_info "                 Get mode:   $(_get "get" "mode")"
+  _msg_info "           Target command:   $(_get "target" "command")"
+  _msg_info "             X coordinate:   $(_get "x" "axis")"
+  _msg_info "             Y coordinate:   $(_get "y" "axis")"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Encode or decode screen coordinates as points of the orthonormal square.
+
+Usage:
+  $(_get "app" "name")
+    [options]
+    <command>
+    <x>
+    <y>
+  commands
+    encode                From normal coordinates to orthonormal coordinates
+    decode                From the orthonormal square to real coordinates
+  options:
+     -m <method>          Method to obtain pixels per total area.
+                          Default: $(_get "get" "mode")
+     -h                   This message.
+     -v                   Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_globals
+_global_variables
+# shellcheck disable=SC2004
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'm:cvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    m) override_get_mode="${OPTARG}" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+	 _usage \
+           0 ;;
+    *)
+    _msg_error \
+      "Invalid argument '${arg}'" \
+      0 && \
+    _set_overrides && \
+    _usage \
+      1
+    ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+(( "$#" < 1 )) && \
+  _msg_error \
+    "No command given" \
+    1
+_set \
+  "target" \
+  "command" \
+  "${1}"
+(( "$#" < 3 )) && \
+  _msg_error \
+    "No coordinates given" \
+    1
+_set \
+  "x" \
+  "axis" \
+  "${2}"
+_set \
+  "y" \
+  "axis" \
+  "${3}"
+_set_overrides
+app_opts=(
+  "$(_get \
+       "target" \
+       "command")"
+  "$(_get \
+       "x" \
+       "axis")"
+  "$(_get \
+       "y" \
+       "axis")"
+  "$(_get \
+       "get" \
+       "mode")"
+)
+_show_config
+_coordinates_orthonormal \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
