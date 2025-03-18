@@ -5,7 +5,9 @@ PREFIX ?= /usr/local
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/android-input-utils
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 
-DOC_FILES=$(wildcard *.rst)
+DOC_FILES=\
+  $(wildcard *.rst) \
+  $(wildcard docs/*.md)
 SCRIPT_FILES=$(wildcard android-input-utils/*)
 
 all:
