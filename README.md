@@ -73,7 +73,14 @@ fur \
 Be aware the mirrors could go offline any time as Github and more
 in general all HTTP resources are inherently unstable and censorable.
 
+## Documentation
+
+Help for the `coordinates-orthonormal` and
+`key2keyevent` commands can be displayed by invoking
+them with the `-h` option.
+
 ## License
 
 This program is released by Pellegrino Prevete under the terms
 of the GNU Affero General Public License version 3.
+

@@ -2,34 +2,42 @@
 
 # SPDX-License-Identifier: AGPL-3.0
 
-#    ----------------------------------------------------------------------
-#    Copyright © 2024, 2025  Pellegrino Prevete
+#    -----------------------------------------------------
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
 
-_bin="$( \
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
+    "$(command \
+         -v \
+	 "env")")"
 _lib="${_bin}/../lib"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_crash_bash}" \
+  2>"/dev/null" || \
 source \
-  "${_lib}/libcrash-bash/crash-bash"
+  "${_crash_bash}"
 
 _global_variables() {
   declare \
@@ -323,8 +331,9 @@ _global_variables() {
     ["system_navigation_right"]="283"
     ["all_apps"]="284"
     ["refresh"]="285"
-
   )
+  color=""
+  quiet=""
 }
 
 _key2keyevent() {
@@ -335,10 +344,58 @@ _key2keyevent() {
     "${_key}"
 }
 
+_usage() {
+  local \
+    _exit_code="${1}" \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Returns Android key code for a given input key.
+
+Usage:
+
+  ${app_name}
+    [options]
+    <input-key>
+
+  arguments
+
+    input-key             Any type of symbolic function you can think which
+                          could go on a keyboard or on a physical button,
+                          for example a letter or the 'eject disc' button
+                          on a keyboard or the volume or power button on a
+                          phone. Any switch-like object, a 'key-event'.
+
+     -h                   This message.
+
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${_exit_code}"
+}
+
+_globals
 _global_variables
 
+if (( "$#" < 1 )); then
+  _msg=(
+    "No keyevent given"
+    "in input."
+  )
+  _msg_error \
+    "${_msg[*]}" \
+    0
+  _usage \
+    1
+fi
 target_key="${1}"
-
 app_opts=(
   "${target_key}"
 )
