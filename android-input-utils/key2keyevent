@@ -359,7 +359,7 @@ _print_values() {
   )
   _keys_amount="${#_keys[@]}"
   if [[ "${_format}" == "plain" ]]; then
-    for _key in "${!keyevents[@]}"; do
+    for _key in "${_keys[@]}"; do
       printf \
         "%s %s\n" \
         "${_key}" \
@@ -369,7 +369,7 @@ _print_values() {
     _index=0
     echo \
       "{"
-    for _key in "${!keyevents[@]}"; do
+    for _key in "${_keys[@]}"; do
       _index=$((
         _index + 1))
       if (( "${_index}" < "${_keys_amount}" )); then
