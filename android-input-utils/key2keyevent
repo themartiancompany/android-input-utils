@@ -372,12 +372,12 @@ _print_values() {
         _index + 1))
       if (( "${_index}" < "${_keys_amount}" )); then
         printf \
-          '  "%s":\n    "%s",\n'
+          '  "%s":\n    "%s",\n' \
           "${_key}" \
           "${keyevents["${_key}"]}"
       elif (( "${_index}" == "${_keys_amount}" )); then
         printf \
-          '  "%s":\n    "%s"\n'
+          '  "%s":\n    "%s"\n' \
           "${_key}" \
           "${keyevents["${_key}"]}"
       fi
