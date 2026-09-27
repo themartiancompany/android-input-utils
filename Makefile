@@ -55,6 +55,12 @@ SCRIPT_FILES=\
   $(wildcard \
       $(_PROJECT)/*)
 
+BASH_FILES=\
+  coordinates-orthonormal \
+  key2keyevent \
+  keyboard-hide \
+  keyboard-show
+
 all:
 
 check: shellcheck
@@ -79,15 +85,12 @@ install: install-scripts install-doc install-man
 
 install-scripts:
 
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/coordinates-orthonormal" \
-	  "$(BIN_DIR)/coordinates-orthonormal"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/key2keyevent" \
-	  "$(BIN_DIR)/key2keyevent"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/keyboard-show" \
-	  "$(BIN_DIR)/keyboard-show"
+	for _file \
+	  in $(BASH_FILES); do \
+	  $(_INSTALL_EXE) \
+	    "$(_PROJECT)/$${_file}" \
+	    "$(BIN_DIR)/$${_file}"; \
+	done
 
 install-doc:
 
@@ -119,10 +122,11 @@ uninstall-man:
 
 uninstall-scripts:
 
-	rm \
-	  -vrf \
-	  "$(BIN_DIR)/coordinates-orthonormal" \
-	  "$(BIN_DIR)/key2keyevent"
-	  "$(BIN_DIR)/keyboard-show"
+	for _file \
+	  in $(BASH_FILES); do \
+	  rm \
+	    -vrf \
+	    "$(BIN_DIR)/$${_file}" \
+	done
 
 .PHONY: check install install-doc install-man install-scripts shellcheck uninstall uninstall-man uninstall-scripts
