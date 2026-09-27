@@ -409,7 +409,7 @@ Usage:
                           on a keyboard or the volume or power button on a
                           phone. Any switch-like object, a 'key-event'.
 
-     -p                   Prints all possible key-events.
+     -p                   Prints all valid key-events.
 
      -h                   This message.
 
