@@ -65,6 +65,12 @@ all:
 
 check: shellcheck
 
+clean:
+
+	rm \
+	  -vrf \
+	  "build"
+
 prepare:
 
 	git \
@@ -129,4 +135,4 @@ uninstall-scripts:
 	    "$(BIN_DIR)/$${_file}" \
 	done
 
-.PHONY: check install install-doc install-man install-scripts shellcheck uninstall uninstall-man uninstall-scripts
+.PHONY: check clean install install-doc install-man install-scripts shellcheck uninstall uninstall-man uninstall-scripts
