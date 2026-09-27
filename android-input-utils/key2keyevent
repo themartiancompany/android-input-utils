@@ -343,7 +343,9 @@ _global_variables() {
 _print_keys() {
   printf \
     "%s\n" \
-    "${!keyevents[@]}"
+    "${!keyevents[@]}" |
+    sort \
+      -V
 }
 
 _print_values() {
@@ -352,8 +354,8 @@ _print_values() {
     _keys=() \
     _index \
     _key
-  _keys+=(
-    "${!keyevents[@]}"
+  _keys+=( $(
+    _print_keys)
   )
   _keys_amount="${#_keys[@]}"
   if [[ "${_format}" == "plain" ]]; then
