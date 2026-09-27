@@ -458,7 +458,8 @@ shift \
     OPTIND - 1 \
   ))
 
-if (( "$#" < 1 )); then
+if (( "$#" < 1 )) && \
+  [[ "${print_keys}" != "y" ]]; then
   _msg=(
     "No keyevent given"
     "in input."
