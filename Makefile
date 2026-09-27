@@ -30,6 +30,22 @@ PREFIX ?= /usr/local
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 
+_INSTALL_FILE=\
+  install \
+    -vDm644
+_INSTALL_DIR=\
+  install \
+    -vdm755
+_INSTALL_EXE=\
+  install \
+    -vDm755
+_MAKE_EXE=\
+  chmod \
+    755
+_MAKE_LINK=\
+  ln \
+    -sv
+
 DOC_FILES=\
   $(wildcard \
       *.rst) \
@@ -63,14 +79,15 @@ install: install-scripts install-doc install-man
 
 install-scripts:
 
-	install \
-	  -vDm755 \
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/coordinates-orthonormal" \
 	  "$(BIN_DIR)/coordinates-orthonormal"
-	install \
-	  -vDm755 \
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/key2keyevent" \
 	  "$(BIN_DIR)/key2keyevent"
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/keyboard-show" \
+	  "$(BIN_DIR)/keyboard-show"
 
 install-doc:
 
@@ -98,7 +115,7 @@ uninstall-man:
 	cd \
 	  "man"; \
   	make \
-	  "uninstall-man"	
+	  "uninstall-man"
 
 uninstall-scripts:
 
@@ -106,5 +123,6 @@ uninstall-scripts:
 	  -vrf \
 	  "$(BIN_DIR)/coordinates-orthonormal" \
 	  "$(BIN_DIR)/key2keyevent"
+	  "$(BIN_DIR)/keyboard-show"
 
 .PHONY: check install install-doc install-man install-scripts shellcheck uninstall uninstall-man uninstall-scripts

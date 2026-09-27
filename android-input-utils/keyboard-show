@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: AGPL-3.0
+
+#    -----------------------------------------------------
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
+#
+#    All rights reserved
+#    -----------------------------------------------------
+#
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
+#
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
+
+_bin="$(
+  dirname \
+    "$(command \
+         -v \
+	 "env")")"
+_lib="${_bin}/../lib"
+_share="${_bin}/../share"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_crash_bash}" \
+  2>"/dev/null" \
+  1>"/dev/null" || \
+source \
+  "${_crash_bash}"
+
+_root_requirements() {
+  _check_cmd \
+    "sdotool"
+}
+
+# shellcheck disable=SC2034
+_global_variables() {
+  launch_date=""
+  launch_mode=""
+  color=""
+  quiet=""
+}
+
+_keyboard_show() {
+  local \
+    _mode="${1}" \
+    _sdotool_opts=()
+  if [[ "${_mode}" == "sdotool" ]]; then
+    if [[ "${quiet}" == "n" ]]; then
+      _sdotool_opts+=(
+        -v
+      )
+    fi
+    # 'button_start' is text
+    # value for the 'press start'
+    # keyevent 108, which is
+    # normally fired by a controller
+    # when pressing start,
+    # which if done on focused
+    # text input shows a keyboard.
+    sdotool \
+      "${_sdotool_opts[@]}" \
+      key \
+        "button_start"
+  else
+    _msg=(
+      "Unknown mode '${_mode}'."
+      "Valid values for launch"
+      "mode are 'sdotool'."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+
+}
+
+_set_overrides() {
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  _set_override \
+    "launch" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "launch" \
+    "mode" \
+    "sdotool"
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "              Launch date:   ${launch_date}"
+  _msg_info "              Launch mode:   ${launch_mode}"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _exit_code="${1}" \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Shows an Android virtual keyboard.
+
+Usage:
+
+  ${app_name}
+    [options]
+
+  options:
+
+     -m <mode>                   Method to use to show keyboard.
+                                 It can be:
+                                 - sdotool.
+                                 Default: ${launch_mode}
+
+     -h                          This message.
+     -v                          Enable verbose output
+
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${_exit_code}"
+}
+
+_globals
+_global_variables
+# shellcheck disable=SC2004
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'm:vh?' \
+    arg; do
+  case \
+    "${arg}" in
+    m)
+      override_launch_mode="${OPTARG}" ;;
+    v)
+      override_quiet="n" ;;
+    h|?)
+      _set_overrides
+      _usage \
+        0 ;;
+    *)
+      _msg=(
+        "Invalid argument '${arg}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      _set_overrides
+      _usage \
+        1 ;;
+  esac
+done
+shift \
+  $((
+    OPTIND - 1 \
+  ))
+_set_overrides
+app_opts=(
+  "${launch_mode}"
+)
+_show_config
+_keyboard_show \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:

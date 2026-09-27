@@ -24,7 +24,22 @@
 
 A collection of input utilities for Android.
 
-`key2keyevent`: returns Android keyevent code for a given key
+- `key2keyevent`:
+
+  Returns Android keyevent code for a given key.
+  Very handy for looking at keyevents.
+
+- `orthonormal-coordinates`:
+
+  A command to convert coordinates, useful
+  for sending swipes.
+
+- `keyboard-show`:
+
+  Shows the virtual keyboard.
+  This command exists because I was tired
+  of remembering about `button_start`.
+
 
 ## Installation
 
