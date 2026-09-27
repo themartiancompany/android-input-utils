@@ -41,7 +41,7 @@ the uncensorable
 [Ur](
   https://github.com/themartiancompany/ur)
 user repository and application store as
-`lur`.
+`android-input-utils`.
 The source code is published on the
 [Ethereum Virtual Machine File System](
   https://github.com/themartiancompany/evmfs)
@@ -78,6 +78,15 @@ in general all HTTP resources are inherently unstable and censorable.
 Help for the `coordinates-orthonormal` and
 `key2keyevent` commands can be displayed by invoking
 them with the `-h` option.
+
+Manuals can be consulted using the
+
+```bash
+  man \
+    <program-name>
+```
+
+command.
 
 ## License
 

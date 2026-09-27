@@ -40,6 +40,7 @@ source \
   "${_crash_bash}"
 
 _global_variables() {
+  print_keys=""
   declare \
     -g \
     -A \
@@ -336,12 +337,49 @@ _global_variables() {
   quiet=""
 }
 
+_print_keys() {
+  printf \
+    "- '%s'\n" \
+    "${!_keyevents[@]}"
+}
+
 _key2keyevent() {
   local \
-    _key="${1}"
-  _get \
-    "keyevents" \
-    "${_key}"
+    _key="${1}" \
+    _print_keys="${2}" \
+    _msg=()
+  if [[ "${_key}" == "" || \
+        "${_print_keys}" == "y" ]]; then
+    if [[ "${_key}" == "" ]]; then
+      _msg=(
+        "No input key, printing"
+        "all."
+      )
+    fi
+    _print_keys
+  elif [[ "${_print_keys}" == "n" && \
+          "${_key}" != "" ]]
+    _get \
+      "keyevents" \
+      "${_key}"
+  fi
+}
+
+_set_overrides() {
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  _set_override \
+    "print" \
+    "keys" \
+    "n"
 }
 
 _usage() {
@@ -381,8 +419,42 @@ ENDUSAGETEXT
     "${_exit_code}"
 }
 
+
 _globals
 _global_variables
+
+while \
+  getopts \
+    'pcvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    p)
+      override_print_keys="y" ;;
+    c)
+      override_color="y" ;;
+    v)
+      override_quiet="n" ;;
+    h|?)
+      _set_overrides
+      _usage \
+        0 ;;
+    *)
+      _msg=(
+        "Invalid argument '${arg}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      _set_overrides
+      _usage \
+        1 ;;
+  esac
+done
+shift \
+  $((
+    OPTIND - 1 \
+  ))
 
 if (( "$#" < 1 )); then
   _msg=(
@@ -396,8 +468,10 @@ if (( "$#" < 1 )); then
     1
 fi
 target_key="${1}"
+_set_overrides
 app_opts=(
   "${target_key}"
+  "${print_keys}"
 )
 _key2keyevent \
   "${app_opts[@]}"
