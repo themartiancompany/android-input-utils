@@ -358,7 +358,7 @@ _key2keyevent() {
     fi
     _print_keys
   elif [[ "${_print_keys}" == "n" && \
-          "${_key}" != "" ]]
+          "${_key}" != "" ]]; then
     _get \
       "keyevents" \
       "${_key}"
