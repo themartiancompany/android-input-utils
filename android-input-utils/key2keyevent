@@ -530,8 +530,8 @@ shift \
   ))
 
 if (( "$#" < 1 )) && \
-  [[ "${override_print_keys}" != "y" && \
-     "${override_print_values}" != "y" ]]; then
+  [[ ! -v "override_print_keys" && \
+     ! -v "override_print_values" ]]; then
   _msg=(
     "No keyevent given"
     "in input."
