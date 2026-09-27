@@ -503,7 +503,7 @@ while \
     P)
       override_print_values="y" ;;
     o)
-      override_output_format="y" ;;
+      override_output_format="${OPTARG}" ;;
     c)
       override_color="y" ;;
     v)
