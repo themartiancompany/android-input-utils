@@ -340,7 +340,7 @@ _global_variables() {
 
 _print_keys() {
   printf \
-    "- '%s'\n" \
+    "\- '%s'\n" \
     "${!_keyevents[@]}"
 }
 
