@@ -90,8 +90,7 @@ in general all HTTP resources are inherently unstable and censorable.
 
 ## Documentation
 
-Help for the `coordinates-orthonormal` and
-`key2keyevent` commands can be displayed by invoking
+Help for all the commands can be displayed by invoking
 them with the `-h` option.
 
 Manuals can be consulted using the
@@ -100,8 +99,14 @@ Manuals can be consulted using the
   man \
     <program-name>
 ```
-
 command.
+
+Manuals in ReSTructured format
+are in the `man` submodule in
+this directory, pointing to the
+[`android-input-utils-man`](
+  https://github.com/themartiancompany/android-input-utils-man)
+repository.
 
 ## License
 
