@@ -42,6 +42,7 @@ source \
 _global_variables() {
   target_key=""
   print_keys=""
+  print_values=""
   declare \
     -g \
     -A \
@@ -341,24 +342,31 @@ _global_variables() {
 _print_keys() {
   printf \
     "\- '%s'\n" \
-    "${!_keyevents[@]}"
+    "${!keyevents[@]}"
 }
 
 _key2keyevent() {
   local \
     _key="${1}" \
     _print_keys="${2}" \
+    _print_values="${3}" \
     _msg=()
   if [[ "${_key}" == "" || \
-        "${_print_keys}" == "y" ]]; then
+        "${_print_keys}" == "y" || \
+	"${_print_values}" == "y" ]]; then
     if [[ "${_key}" == "" ]]; then
       _msg=(
         "No input key, printing"
         "all."
       )
     fi
-    _print_keys
+    if [[ "${_print_values}" == "y" ]]; then
+      _print_values
+    elif [[ "${_print_values}" == "n" ]]; then
+      _print_keys
+    fi
   elif [[ "${_print_keys}" == "n" && \
+	  "${_print_values}" == "n" && \
           "${_key}" != "" ]]; then
     _get \
       "keyevents" \
@@ -380,6 +388,10 @@ _set_overrides() {
   _set_override \
     "print" \
     "keys" \
+    "n"
+  _set_override \
+    "print" \
+    "values" \
     "n"
 }
 
@@ -412,6 +424,8 @@ Usage:
 
      -p                   Prints all valid key-events.
 
+     -P                   Prints all valid key-events with value
+
      -h                   This message.
 
 ENDUSAGETEXT
@@ -428,12 +442,14 @@ _global_variables
 
 while \
   getopts \
-    'pcvh?' \
+    'pPcvh?' \
     arg; do
   case \
     "${arg}" in
     p)
       override_print_keys="y" ;;
+    P)
+      override_print_values="y" ;;
     c)
       override_color="y" ;;
     v)
@@ -460,7 +476,8 @@ shift \
   ))
 
 if (( "$#" < 1 )) && \
-  [[ "${override_print_keys}" != "y" ]]; then
+  [[ "${override_print_keys}" != "y" && \
+     "${override_print_values}" != "y" ]]; then
   _msg=(
     "No keyevent given"
     "in input."
@@ -478,6 +495,7 @@ _set_overrides
 app_opts=(
   "${target_key}"
   "${print_keys}"
+  "${print_values}"
 )
 _key2keyevent \
   "${app_opts[@]}"
