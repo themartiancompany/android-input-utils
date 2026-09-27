@@ -43,6 +43,7 @@ _global_variables() {
   target_key=""
   print_keys=""
   print_values=""
+  output_format=""
   declare \
     -g \
     -A \
@@ -341,8 +342,49 @@ _global_variables() {
 
 _print_keys() {
   printf \
-    "\- '%s'\n" \
+    "%s\n" \
     "${!keyevents[@]}"
+}
+
+_print_values() {
+  local \
+    _format="${1}" \
+    _keys=() \
+    _index \
+    _key
+  _keys+=(
+    "${!keyevents[@]}"
+  )
+  _keys_amount="${#_keys[@]}"
+  if [[ "${_format}" == "plain" ]]; then
+    for _key in "${!keyevents[@]}"; do
+      printf \
+        "%s %s\n" \
+        "${_key}" \
+        "${keyevents["${_key}"]}"
+    done
+  elif [[ "${_format}" == "json" ]]; then
+    _index=0
+    echo \
+      "{"
+    for _key in "${!keyevents[@]}"; do
+      _index=$((
+        _index + 1))
+      if (( "${_index}" < "${_keys_amount}" )); then
+        printf \
+          '  "%s":\n    "%s",\n'
+          "${_key}" \
+          "${keyevents["${_key}"]}"
+      elif (( "${_index}" == "${_keys_amount}" )); then
+        printf \
+          '  "%s":\n    "%s"\n'
+          "${_key}" \
+          "${keyevents["${_key}"]}"
+      fi
+    done
+    echo \
+      "}"
+  fi
 }
 
 _key2keyevent() {
@@ -350,10 +392,11 @@ _key2keyevent() {
     _key="${1}" \
     _print_keys="${2}" \
     _print_values="${3}" \
+    _output_format="${4}" \
     _msg=()
   if [[ "${_key}" == "" || \
         "${_print_keys}" == "y" || \
-	"${_print_values}" == "y" ]]; then
+        "${_print_values}" == "y" ]]; then
     if [[ "${_key}" == "" ]]; then
       _msg=(
         "No input key, printing"
@@ -361,7 +404,8 @@ _key2keyevent() {
       )
     fi
     if [[ "${_print_values}" == "y" ]]; then
-      _print_values
+      _print_values \
+        "${_output_format}"
     elif [[ "${_print_values}" == "n" ]]; then
       _print_keys
     fi
@@ -393,6 +437,10 @@ _set_overrides() {
     "print" \
     "values" \
     "n"
+  _set_override \
+    "output" \
+    "format" \
+    "plain"
 }
 
 _usage() {
@@ -424,7 +472,11 @@ Usage:
 
      -p                   Prints all valid key-events.
 
-     -P                   Prints all valid key-events with value
+     -P                   Prints all valid key-events with value.
+
+     -o <output-format>   Output format for the key-events table.
+                          It can be 'plain' or 'json'.
+                          Default: ${output_format}
 
      -h                   This message.
 
@@ -442,7 +494,7 @@ _global_variables
 
 while \
   getopts \
-    'pPcvh?' \
+    'pPo:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -450,6 +502,8 @@ while \
       override_print_keys="y" ;;
     P)
       override_print_values="y" ;;
+    o)
+      override_output_format="y" ;;
     c)
       override_color="y" ;;
     v)
@@ -496,6 +550,7 @@ app_opts=(
   "${target_key}"
   "${print_keys}"
   "${print_values}"
+  "${output_format}"
 )
 _key2keyevent \
   "${app_opts[@]}"
